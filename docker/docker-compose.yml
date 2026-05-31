@@ -1,0 +1,57 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL}
+    ports:
+      - "${APP_PORT:-3009}:3009"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+      LIVEKIT_URL: ${LIVEKIT_URL}
+      NEXT_PUBLIC_LIVEKIT_URL: ${NEXT_PUBLIC_LIVEKIT_URL}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+    depends_on:
+      - postgres
+      - livekit
+    networks:
+      - kill-live-network
+
+  postgres:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kill-live
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - kill-live-network
+
+  livekit:
+    image: livekit/livekit-server:master
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+    command: --config /etc/livekit.yaml
+    volumes:
+      - ${LIVEKIT_CONFIG:-./docker/livekit.yaml}:/etc/livekit.yaml
+    networks:
+      - kill-live-network
+
+volumes:
+  postgres-data:
+
+networks:
+  kill-live-network:
+    driver: bridge

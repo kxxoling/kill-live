@@ -1,0 +1,17 @@
+echo "Running pre-commit checks..."
+
+echo "1/2 Running lint..."
+bun run lint
+if [ $? -ne 0 ]; then
+  echo "❌ Lint failed. Please fix the errors before committing."
+  exit 1
+fi
+
+echo "2/2 Running typecheck..."
+bun run typecheck
+if [ $? -ne 0 ]; then
+  echo "❌ Typecheck failed. Please fix the errors before committing."
+  exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
