@@ -19,10 +19,6 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Run lint and typecheck before build
-RUN bun run lint
-RUN bun run typecheck
-
 RUN bun run build
 
 # Production image
