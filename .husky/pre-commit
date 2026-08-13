@@ -1,17 +1,25 @@
+STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx|json|css)$' || true)
+
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+
 echo "Running pre-commit checks..."
 
 echo "1/2 Running lint..."
-bun run lint
+echo "$STAGED" | xargs bunx biome check
 if [ $? -ne 0 ]; then
   echo "❌ Lint failed. Please fix the errors before committing."
   exit 1
 fi
 
-echo "2/2 Running typecheck..."
-bun run typecheck
-if [ $? -ne 0 ]; then
-  echo "❌ Typecheck failed. Please fix the errors before committing."
-  exit 1
+if echo "$STAGED" | grep -qE '\.(ts|tsx)$'; then
+  echo "2/2 Running typecheck..."
+  tsc --noEmit
+  if [ $? -ne 0 ]; then
+    echo "❌ Typecheck failed. Please fix the errors before committing."
+    exit 1
+  fi
 fi
 
 echo "✅ All pre-commit checks passed!"
