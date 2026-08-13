@@ -40,11 +40,12 @@ RUN useradd --system --uid 1001 nextjs
 COPY package.json ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
+COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/.next/static ./.next/static
 
 COPY --from=builder /app/drizzle.config.ts ./
-COPY --from=builder /app/db ./db
-COPY --from=builder /app/config ./config
+COPY --from=builder /app/src/db ./src/db
+COPY --from=builder /app/drizzle ./drizzle
 
 USER nextjs
 
@@ -53,4 +54,4 @@ EXPOSE 3009
 ENV PORT 3009
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "./node_modules/.bin/drizzle-kit migrate && node server.js"]
