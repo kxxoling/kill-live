@@ -43,8 +43,8 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 COPY --from=builder /app/drizzle.config.ts ./
-COPY --from=builder /app/db ./db
-COPY --from=builder /app/config ./config
+COPY --from=builder /app/src/db ./src/db
+COPY --from=builder /app/drizzle ./drizzle
 
 USER nextjs
 

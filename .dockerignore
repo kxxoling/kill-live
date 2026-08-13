@@ -18,7 +18,6 @@ docker-compose.yml
 
 # Version control
 .git
-.gitignore
 
 # IDE and OS files
 .vscode
