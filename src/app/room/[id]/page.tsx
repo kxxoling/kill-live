@@ -22,7 +22,7 @@ export default async function RoomPage({ params }: RoomPageProps) {
   }
 
   // Pass necessary env variables to client
-  const livekitUrl = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL || "";
+  const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL || "";
   const enableUpload = isS3Configured();
 
   return (
