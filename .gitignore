@@ -44,4 +44,3 @@ bun.lockb
 uploads/
 
 # docker
-docker/livekit.yaml
