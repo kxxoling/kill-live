@@ -56,7 +56,7 @@ export function PasswordDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent onClose={handleClose} className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>🔒 Private Room</DialogTitle>
           <DialogDescription>&quot;{roomName}&quot; requires a password to join.</DialogDescription>
