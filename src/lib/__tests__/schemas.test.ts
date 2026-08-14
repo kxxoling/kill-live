@@ -38,6 +38,16 @@ describe("createRoomSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("should accept empty password string", () => {
+    const result = createRoomSchema.safeParse({ name: "Room", password: "" });
+    expect(result.success).toBe(true);
+  });
+
+  it("should accept undefined password", () => {
+    const result = createRoomSchema.safeParse({ name: "Room" });
+    expect(result.success).toBe(true);
+  });
+
   it("should reject empty name", () => {
     const result = createRoomSchema.safeParse({ name: "" });
     expect(result.success).toBe(false);
