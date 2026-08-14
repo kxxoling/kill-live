@@ -45,7 +45,12 @@ services:
     ports:
       - "7880:7880"
       - "7881:7881"
-    command: --config /etc/livekit.yaml
+    environment:
+      LIVEKIT_NODE_IP: ${LIVEKIT_NODE_IP:-}
+      LIVEKIT_RTC_USE_EXTERNAL_IP: ${LIVEKIT_USE_EXTERNAL_IP:-false}
+    entrypoint: ["sh", "-c"]
+    command:
+      - "/livekit-server --config /etc/livekit.yaml $${LIVEKIT_NODE_IP:+--node-ip $$LIVEKIT_NODE_IP}"
     volumes:
       - ${LIVEKIT_CONFIG:-./livekit.yaml}:/etc/livekit.yaml
     networks:
