@@ -10,7 +10,11 @@ const roomConfigSchema = z.object({
 export const createRoomSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50),
   description: z.string().max(200).optional(),
-  password: z.string().min(4, "Password must be at least 4 characters").optional(),
+  password: z
+    .string()
+    .min(4, "Password must be at least 4 characters")
+    .optional()
+    .or(z.literal("")),
   config: roomConfigSchema.optional(),
 });
 
