@@ -43,6 +43,7 @@
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
+    "geist": "^1.7.2",
     "livekit-client": "^2.19.0",
     "livekit-server-sdk": "^2.15.3",
     "lucide-react": "^1.17.0",
