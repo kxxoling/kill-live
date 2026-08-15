@@ -17,7 +17,7 @@ ENV NEXT_PUBLIC_LIVEKIT_URL=$NEXT_PUBLIC_LIVEKIT_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN bun run build
 
@@ -25,8 +25,8 @@ RUN bun run build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Oven/bun is based on debian, so we use groupadd/useradd
 RUN groupadd --system --gid 1001 nodejs
@@ -47,7 +47,7 @@ USER nextjs
 
 EXPOSE 3009
 
-ENV PORT 3009
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3009
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["sh", "-c", "./node_modules/.bin/drizzle-kit migrate && node server.js"]
