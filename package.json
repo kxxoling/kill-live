@@ -1,6 +1,6 @@
 {
   "name": "kill-live",
-  "version": "20260531",
+  "version": "20260815",
   "private": true,
   "scripts": {
     "prepare": "husky",
