@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { content, roomId, type, fileUrl, fileName, fileSize } = parsed.data;
+    const { content, roomId, type, fileKey, fileName, fileSize } = parsed.data;
 
     if (!(await isRoomParticipant(roomId, session.user.id))) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       id: messageId,
       content,
       type: type || "text",
-      fileUrl: fileUrl || null,
+      fileUrl: fileKey ? `/uploads/${fileKey}` : null,
       fileName: fileName || null,
       fileSize: fileSize || null,
       userId: session.user.id,

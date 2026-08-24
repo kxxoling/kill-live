@@ -74,7 +74,12 @@ export const createMessageSchema = z.object({
   content: z.string().min(1).max(4000),
   roomId: z.string().min(1),
   type: z.enum(["text", "image", "file", "system"]).optional(),
-  fileUrl: z.string().optional(),
+  // Server-generated upload filename (e.g. "1756041600000_ab12cd34.png");
+  // the client never supplies the /uploads/ prefix — the server does.
+  fileKey: z
+    .string()
+    .regex(/^\d+_[0-9a-f]{8}\.[a-z0-9]+$/, "Invalid file key")
+    .optional(),
   fileName: z.string().optional(),
   fileSize: z.number().int().nonnegative().optional(),
 });

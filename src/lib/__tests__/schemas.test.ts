@@ -224,3 +224,24 @@ describe("adminRoomPasswordSchema", () => {
     expect(adminRoomPasswordSchema.safeParse({ id: "r1", password: "abc" }).success).toBe(false);
   });
 });
+
+describe("createMessageSchema fileKey", () => {
+  it("should accept a server-generated upload key", () => {
+    expect(
+      createMessageSchema.safeParse({
+        content: "hi",
+        roomId: "r1",
+        fileKey: "1756041600000_ab12cd34.png",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("should reject paths, prefixes and user-crafted URLs", () => {
+    const bad = ["/uploads/x.png", "uploads/x.png", "a/b.png", "../etc/passwd", "x.png"];
+    for (const fileKey of bad) {
+      expect(createMessageSchema.safeParse({ content: "hi", roomId: "r1", fileKey }).success).toBe(
+        false,
+      );
+    }
+  });
+});
