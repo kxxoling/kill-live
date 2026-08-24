@@ -4,10 +4,19 @@ import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { messages, users } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { hasRoomParticipation, isRoomParticipant } from "@/services/room-service";
 
 // Get messages for a room
 export async function GET(req: NextRequest) {
   try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const roomId = searchParams.get("roomId");
     const limit = parseInt(searchParams.get("limit") || "50", 10);
@@ -15,6 +24,11 @@ export async function GET(req: NextRequest) {
 
     if (!roomId) {
       return NextResponse.json({ error: "Room ID is required" }, { status: 400 });
+    }
+
+    // Reading history is allowed for past and current participants alike.
+    if (!(await hasRoomParticipation(roomId, session.user.id))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const roomMessages = await db
@@ -63,6 +77,10 @@ export async function POST(req: NextRequest) {
 
     if (!content || !roomId) {
       return NextResponse.json({ error: "Content and room ID are required" }, { status: 400 });
+    }
+
+    if (!(await isRoomParticipant(roomId, session.user.id))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const messageId = crypto.randomUUID();

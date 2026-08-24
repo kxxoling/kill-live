@@ -11,6 +11,7 @@ export async function createLiveKitToken(
   const at = new AccessToken(apiKey, apiSecret, {
     identity: participantIdentity,
     name: participantName,
+    ttl: 2 * 60 * 60, // 2 hours; re-issued on reconnect
   });
 
   at.addGrant({
