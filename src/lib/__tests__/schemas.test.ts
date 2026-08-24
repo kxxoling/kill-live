@@ -5,6 +5,8 @@ import {
   createMessageSchema,
   createRoomSchema,
   joinRoomSchema,
+  leaveRoomSchema,
+  manageParticipantSchema,
   profileSchema,
   roomListSchema,
   usernameSchema,
@@ -243,5 +245,47 @@ describe("createMessageSchema fileKey", () => {
         false,
       );
     }
+  });
+});
+
+describe("manageParticipantSchema", () => {
+  it("should accept a valid kick request", () => {
+    expect(
+      manageParticipantSchema.safeParse({ roomId: "r1", targetUserId: "u1", action: "kick" })
+        .success,
+    ).toBe(true);
+  });
+
+  it("should accept setRole with a valid role", () => {
+    expect(
+      manageParticipantSchema.safeParse({
+        roomId: "r1",
+        targetUserId: "u1",
+        action: "setRole",
+        role: "admin",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("should reject unknown actions and roles", () => {
+    expect(
+      manageParticipantSchema.safeParse({ roomId: "r1", targetUserId: "u1", action: "ban" })
+        .success,
+    ).toBe(false);
+    expect(
+      manageParticipantSchema.safeParse({
+        roomId: "r1",
+        targetUserId: "u1",
+        action: "setRole",
+        role: "owner",
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("leaveRoomSchema", () => {
+  it("should require roomId", () => {
+    expect(leaveRoomSchema.safeParse({}).success).toBe(false);
+    expect(leaveRoomSchema.safeParse({ roomId: "r1" }).success).toBe(true);
   });
 });

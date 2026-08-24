@@ -90,3 +90,14 @@ export const adminRoomPasswordSchema = z.object({
   id: z.string().min(1),
   password: z.string().min(6, "Password must be at least 6 characters").nullable().optional(),
 });
+
+export const manageParticipantSchema = z.object({
+  roomId: z.string().min(1),
+  targetUserId: z.string().min(1),
+  action: z.enum(["kick", "setRole"]),
+  role: z.enum(["admin", "member"]).optional(),
+});
+
+export const leaveRoomSchema = z.object({
+  roomId: z.string().min(1),
+});
