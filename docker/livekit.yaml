@@ -7,7 +7,7 @@ redis:
   address: ""
 key_file: ""
 keys:
-  devkey: "change-me-to-a-real-secret"
+  devkey: "${LIVEKIT_API_SECRET:-change-me-to-a-real-secret}"
 logging:
   level: info
   pion_level: error
