@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  adminRoomPasswordSchema,
   changePasswordSchema,
+  createMessageSchema,
   createRoomSchema,
+  joinRoomSchema,
   profileSchema,
   roomListSchema,
   usernameSchema,
@@ -176,5 +179,48 @@ describe("roomListSchema", () => {
     if (result.success) {
       expect(result.data[0].participantCount).toBe(10);
     }
+  });
+});
+
+describe("joinRoomSchema", () => {
+  it("should require roomId", () => {
+    expect(joinRoomSchema.safeParse({}).success).toBe(false);
+  });
+
+  it("should accept roomId with optional password", () => {
+    expect(joinRoomSchema.safeParse({ roomId: "r1" }).success).toBe(true);
+    expect(joinRoomSchema.safeParse({ roomId: "r1", password: "pw" }).success).toBe(true);
+  });
+});
+
+describe("createMessageSchema", () => {
+  it("should require content and roomId", () => {
+    expect(createMessageSchema.safeParse({ content: "hi" }).success).toBe(false);
+    expect(createMessageSchema.safeParse({ roomId: "r1" }).success).toBe(false);
+    expect(createMessageSchema.safeParse({ content: "hi", roomId: "r1" }).success).toBe(true);
+  });
+
+  it("should cap content length", () => {
+    expect(createMessageSchema.safeParse({ content: "x".repeat(4001), roomId: "r1" }).success).toBe(
+      false,
+    );
+  });
+
+  it("should reject unknown message types", () => {
+    expect(
+      createMessageSchema.safeParse({ content: "hi", roomId: "r1", type: "bomb" }).success,
+    ).toBe(false);
+  });
+});
+
+describe("adminRoomPasswordSchema", () => {
+  it("should require id", () => {
+    expect(adminRoomPasswordSchema.safeParse({ password: "secret1" }).success).toBe(false);
+  });
+
+  it("should accept null or 6+ char passwords", () => {
+    expect(adminRoomPasswordSchema.safeParse({ id: "r1", password: null }).success).toBe(true);
+    expect(adminRoomPasswordSchema.safeParse({ id: "r1", password: "secret1" }).success).toBe(true);
+    expect(adminRoomPasswordSchema.safeParse({ id: "r1", password: "abc" }).success).toBe(false);
   });
 });

@@ -62,3 +62,26 @@ export const roomSchema = z.object({
 export const roomListSchema = z.array(roomSchema);
 
 export type Room = z.infer<typeof roomSchema>;
+
+export const joinRoomSchema = z.object({
+  roomId: z.string().min(1),
+  password: z.string().optional(),
+});
+
+export type JoinRoomInput = z.infer<typeof joinRoomSchema>;
+
+export const createMessageSchema = z.object({
+  content: z.string().min(1).max(4000),
+  roomId: z.string().min(1),
+  type: z.enum(["text", "image", "file", "system"]).optional(),
+  fileUrl: z.string().optional(),
+  fileName: z.string().optional(),
+  fileSize: z.number().int().nonnegative().optional(),
+});
+
+export type CreateMessageInput = z.infer<typeof createMessageSchema>;
+
+export const adminRoomPasswordSchema = z.object({
+  id: z.string().min(1),
+  password: z.string().min(6, "Password must be at least 6 characters").nullable().optional(),
+});

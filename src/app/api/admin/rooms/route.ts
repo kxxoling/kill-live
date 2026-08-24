@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
+import { adminRoomPasswordSchema } from "@/lib/schemas";
 import { adminDeleteRoom, adminGetRooms, adminUpdateRoomPassword } from "@/services/room-service";
 
 export async function GET() {
   try {
     const guard = await requireAdmin();
     if (!guard.ok) return guard.response;
-
     const rooms = await adminGetRooms();
     return NextResponse.json(rooms);
   } catch (error) {
@@ -20,10 +20,15 @@ export async function PATCH(request: Request) {
     const guard = await requireAdmin();
     if (!guard.ok) return guard.response;
 
-    const { id, password } = await request.json();
-    if (!id) {
-      return NextResponse.json({ error: "Room ID is required" }, { status: 400 });
+    const parsed = adminRoomPasswordSchema.safeParse(await request.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Room ID is required" },
+        { status: 400 },
+      );
     }
+
+    const { id, password } = parsed.data;
 
     await adminUpdateRoomPassword(id, password ?? null);
     return NextResponse.json({ success: true });

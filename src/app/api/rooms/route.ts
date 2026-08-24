@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { createRoomSchema } from "@/lib/schemas";
 import { createRoom, getAllRooms } from "@/services/room-service";
 
 export async function GET() {
@@ -20,10 +21,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, description, password, config } = await req.json();
-    if (!name) {
-      return NextResponse.json({ error: "Room name is required" }, { status: 400 });
+    const parsed = createRoomSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Invalid input" },
+        { status: 400 },
+      );
     }
+
+    const { name, description, password, config } = parsed.data;
 
     const room = await createRoom({
       name,

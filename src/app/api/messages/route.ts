@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { messages, users } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { createMessageSchema } from "@/lib/schemas";
 import { hasRoomParticipation, isRoomParticipant } from "@/services/room-service";
 
 // Get messages for a room
@@ -19,8 +20,8 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const roomId = searchParams.get("roomId");
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10) || 50, 100);
+    const offset = Math.max(parseInt(searchParams.get("offset") || "0", 10) || 0, 0);
 
     if (!roomId) {
       return NextResponse.json({ error: "Room ID is required" }, { status: 400 });
@@ -72,12 +73,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { content, roomId, type, fileUrl, fileName, fileSize } = body;
-
-    if (!content || !roomId) {
-      return NextResponse.json({ error: "Content and room ID are required" }, { status: 400 });
+    const parsed = createMessageSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Content and room ID are required" },
+        { status: 400 },
+      );
     }
+
+    const { content, roomId, type, fileUrl, fileName, fileSize } = parsed.data;
 
     if (!(await isRoomParticipant(roomId, session.user.id))) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
