@@ -40,9 +40,18 @@ export function ChatSidebar({ roomId, userId, enableUpload = false }: ChatSideba
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ["messages", roomId],
     queryFn: async (): Promise<Message[]> => {
-      const res = await fetch(`/api/messages?roomId=${roomId}`);
+      const current = queryClient.getQueryData<Message[]>(["messages", roomId]) ?? [];
+      const lastCreatedAt = current.at(-1)?.createdAt;
+      const cursor =
+        lastCreatedAt && !current.some((m) => m.createdAt > lastCreatedAt)
+          ? `&after=${encodeURIComponent(lastCreatedAt)}`
+          : "";
+      const res = await fetch(`/api/messages?roomId=${roomId}${cursor}`);
       const data = await res.json();
-      return Array.isArray(data) ? data : [];
+      if (!Array.isArray(data) || data.length === 0) return current;
+      if (!cursor) return data;
+      const seen = new Set(current.map((m) => m.id));
+      return [...current, ...data.filter((m: Message) => !seen.has(m.id))];
     },
     refetchInterval: 2000,
   });
