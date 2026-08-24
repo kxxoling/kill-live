@@ -1,24 +1,31 @@
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      DATABASE_URL: string;
-      BETTER_AUTH_SECRET: string;
-      BETTER_AUTH_URL: string;
-      LIVEKIT_API_KEY: string;
-      LIVEKIT_API_SECRET: string;
-      LIVEKIT_URL: string;
-      NEXT_PUBLIC_APP_URL: string;
-      NEXT_PUBLIC_LIVEKIT_URL?: string;
+import { z } from "zod";
 
-      // S3 Storage Configuration (optional)
-      S3_ENDPOINT?: string;
-      S3_REGION?: string;
-      S3_ACCESS_KEY_ID?: string;
-      S3_SECRET_ACCESS_KEY?: string;
-      S3_BUCKET?: string;
-      S3_PUBLIC_URL?: string;
-    }
-  }
+const envSchema = z.object({
+  DATABASE_URL: z.string().min(1),
+  BETTER_AUTH_SECRET: z.string().min(1),
+  BETTER_AUTH_URL: z.string().optional(),
+  LIVEKIT_API_KEY: z.string().min(1),
+  LIVEKIT_API_SECRET: z.string().min(1),
+  LIVEKIT_URL: z.string().min(1),
+  NEXT_PUBLIC_APP_URL: z.string().optional(),
+  NEXT_PUBLIC_LIVEKIT_URL: z.string().optional(),
+  ADMIN_USERNAMES: z.string().optional(),
+});
+
+const parsed = envSchema.safeParse(process.env);
+
+// `next build` evaluates route modules to collect page data, and build
+// environments (CI, docker) legitimately have no secrets — skip validation
+// there. Nothing connects at build time; runtime still fails fast.
+const isProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
+
+if (!parsed.success && !isProductionBuild) {
+  const missing = parsed.error.issues.map((issue) => issue.path.join(".")).join(", ");
+  throw new Error(
+    `Invalid environment configuration. Check these variables in your .env file: ${missing}`,
+  );
 }
 
-export {};
+type Env = z.infer<typeof envSchema>;
+
+export const env: Env = parsed.success ? parsed.data : (process.env as unknown as Env);
