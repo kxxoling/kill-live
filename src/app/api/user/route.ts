@@ -1,6 +1,14 @@
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { profileSchema } from "@/lib/schemas";
+
+const patchProfileSchema = profileSchema
+  .partial()
+  .refine((data) => data.name !== undefined || data.username !== undefined, {
+    message: "Name or username is required",
+  });
+
 import { getUser, updateUser } from "@/services/user-service";
 
 export async function GET(_req: NextRequest) {
@@ -29,12 +37,15 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { name, username } = body;
-
-    if (!name && !username) {
-      return NextResponse.json({ error: "Name or username is required" }, { status: 400 });
+    const parsed = patchProfileSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Name or username is required" },
+        { status: 400 },
+      );
     }
+
+    const { name, username } = parsed.data;
 
     const updatedUser = await updateUser(session.user.id, { name, username });
     return NextResponse.json(updatedUser);
