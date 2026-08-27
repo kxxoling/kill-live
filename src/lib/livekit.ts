@@ -1,12 +1,13 @@
 import { AccessToken } from "livekit-server-sdk";
+import { env } from "@/lib/env";
 
 export async function createLiveKitToken(
   roomName: string,
   participantName: string,
   participantIdentity: string,
 ): Promise<string> {
-  const apiKey = process.env.LIVEKIT_API_KEY!;
-  const apiSecret = process.env.LIVEKIT_API_SECRET!;
+  const apiKey = env.LIVEKIT_API_KEY;
+  const apiSecret = env.LIVEKIT_API_SECRET;
 
   const at = new AccessToken(apiKey, apiSecret, {
     identity: participantIdentity,
@@ -26,5 +27,5 @@ export async function createLiveKitToken(
 }
 
 export function getLiveKitUrl(): string {
-  return process.env.LIVEKIT_URL!;
+  return env.LIVEKIT_URL;
 }
