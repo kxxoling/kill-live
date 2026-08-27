@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { createLiveKitToken } from "@/lib/livekit";
+import { isRoomParticipant } from "@/services/room-service";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +19,15 @@ export async function POST(req: NextRequest) {
 
     if (!roomName) {
       return NextResponse.json({ error: "Room name is required" }, { status: 400 });
+    }
+
+    // roomName is the room id; only active participants may join media.
+    const isMember = await isRoomParticipant(roomName, session.user.id);
+    if (!isMember) {
+      return NextResponse.json(
+        { error: "Join the room before requesting a media token" },
+        { status: 403 },
+      );
     }
 
     const token = await createLiveKitToken(

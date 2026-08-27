@@ -60,6 +60,8 @@ import {
   getAllRooms,
   getParticipants,
   hashRoomPassword,
+  hasRoomParticipation,
+  isRoomParticipant,
   joinRoom,
   leaveRoom,
   manageParticipant,
@@ -476,6 +478,20 @@ describe("room-service", () => {
       await adminDeleteRoom("r");
       expect(mocks.delete).toHaveBeenCalled();
     });
+  });
+});
+
+describe("participation checks", () => {
+  it("isRoomParticipant requires an active record", async () => {
+    expect(await isRoomParticipant("r", "u")).toBe(false);
+    mocks.participants.findFirst.mockResolvedValueOnce({ id: "p1" });
+    expect(await isRoomParticipant("r", "u")).toBe(true);
+  });
+
+  it("hasRoomParticipation counts past members", async () => {
+    expect(await hasRoomParticipation("r", "u")).toBe(false);
+    mocks.participants.findFirst.mockResolvedValueOnce({ id: "p1", leftAt: new Date() });
+    expect(await hasRoomParticipation("r", "u")).toBe(true);
   });
 });
 

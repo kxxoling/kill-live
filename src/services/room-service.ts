@@ -196,6 +196,25 @@ export async function createRoom(params: {
   };
 }
 
+export async function isRoomParticipant(roomId: string, userId: string): Promise<boolean> {
+  const participant = await db.query.roomParticipants.findFirst({
+    where: and(
+      eq(roomParticipants.roomId, roomId),
+      eq(roomParticipants.userId, userId),
+      isNull(roomParticipants.leftAt),
+    ),
+  });
+  return !!participant;
+}
+
+/** Like isRoomParticipant, but counts past members too (history reading). */
+export async function hasRoomParticipation(roomId: string, userId: string): Promise<boolean> {
+  const participant = await db.query.roomParticipants.findFirst({
+    where: and(eq(roomParticipants.roomId, roomId), eq(roomParticipants.userId, userId)),
+  });
+  return !!participant;
+}
+
 export async function getParticipants(roomId: string) {
   return db
     .select({
