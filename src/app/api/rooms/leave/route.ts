@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { leaveRoomSchema } from "@/lib/schemas";
 import { leaveRoom } from "@/services/room-service";
 
 export async function POST(req: NextRequest) {
@@ -13,11 +14,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { roomId } = await req.json();
-
-    if (!roomId) {
+    const parsed = leaveRoomSchema.safeParse(await req.json());
+    if (!parsed.success) {
       return NextResponse.json({ error: "Room ID is required" }, { status: 400 });
     }
+
+    const { roomId } = parsed.data;
 
     await leaveRoom(roomId, session.user.id);
 

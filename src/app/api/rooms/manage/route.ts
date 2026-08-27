@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { manageParticipantSchema } from "@/lib/schemas";
 import { manageParticipant } from "@/services/room-service";
 
 export async function POST(req: NextRequest) {
@@ -10,13 +11,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { roomId, targetUserId, action, role } = await req.json();
-    if (!roomId || !targetUserId || !action) {
+    const parsed = manageParticipantSchema.safeParse(await req.json());
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "roomId, targetUserId, and action are required" },
+        {
+          error: parsed.error.issues[0]?.message || "roomId, targetUserId, and action are required",
+        },
         { status: 400 },
       );
     }
+
+    const { roomId, targetUserId, action, role } = parsed.data;
 
     await manageParticipant({
       roomId,

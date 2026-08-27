@@ -16,7 +16,9 @@ async function verifyRoomPassword(plain: string, stored: string | null): Promise
   if (stored.startsWith(BCRYPT_PREFIX)) {
     return bcrypt.compare(plain, stored.slice(BCRYPT_PREFIX.length));
   }
-  return plain === stored;
+  // Legacy rows stored un-prefixed bcrypt hashes (written by the admin API);
+  // joinRoom upgrades them to the prefixed format on first verification.
+  return bcrypt.compare(plain, stored);
 }
 
 async function countActiveParticipants(roomId: string): Promise<number> {
@@ -297,7 +299,7 @@ export async function adminGetRooms() {
 }
 
 export async function adminUpdateRoomPassword(id: string, password: string | null) {
-  const hashedPassword = password ? await bcrypt.hash(password, 12) : null;
+  const hashedPassword = password ? await hashRoomPassword(password) : null;
   await db.update(rooms).set({ password: hashedPassword }).where(eq(rooms.id, id));
 }
 

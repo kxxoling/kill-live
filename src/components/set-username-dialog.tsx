@@ -52,7 +52,9 @@ export function SetUsernameDialog({
     setLoading(true);
     try {
       await onSubmit(data.name);
-      handleClose();
+      // Don't close the dialog here: a successful sign-in makes the session
+      // appear, which unmounts this whole branch and keeps the user on the
+      // page. Calling handleClose() would route them back to the home page.
     } catch (error) {
       console.error("Failed to set username:", error);
     } finally {

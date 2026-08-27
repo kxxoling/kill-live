@@ -450,11 +450,16 @@ describe("room-service", () => {
 
   describe("adminUpdateRoomPassword", () => {
     it("with password", async () => {
-      mocks.update.mockReturnValue({
-        set: vi.fn(() => ({ where: vi.fn(() => Promise.resolve()) })),
-      });
-      await adminUpdateRoomPassword("r", "p");
+      let written: { password?: string } = {};
+      mocks.update.mockImplementation(() => ({
+        set: vi.fn((data: { password?: string }) => {
+          written = data;
+          return { where: vi.fn(() => Promise.resolve()) };
+        }),
+      }));
+      await adminUpdateRoomPassword("r", "secret123");
       expect(mocks.update).toHaveBeenCalled();
+      expect(written.password).toMatch(/^bcrypt:\$2[aby]?\$/);
     });
 
     it("with null", async () => {
