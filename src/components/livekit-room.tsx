@@ -102,6 +102,7 @@ export function LiveKitRoomComponent({
   enableAudio = true,
 }: LiveKitRoomComponentProps) {
   const [disconnected, setDisconnected] = useState(false);
+  const [mediaReady, setMediaReady] = useState(false);
   const finalServerUrl = serverUrl || process.env.NEXT_PUBLIC_LIVEKIT_URL;
 
   // Stored prefs are what the user last chose in a call and always win;
@@ -122,7 +123,37 @@ export function LiveKitRoomComponent({
     fetchToken(roomName);
   }, [roomName, fetchToken]);
 
-  if (isPending) {
+  // Ask for camera/mic permission BEFORE connecting. LiveKitRoom publishes
+  // local tracks on connect; if the permission prompt is still pending at
+  // that moment, publication fails silently and media only works after a
+  // page refresh. The warmup request triggers the same prompt, releases the
+  // devices immediately and lets the real connection start with permission
+  // already granted (denial still connects, just without media). Devices
+  // the user disabled by preference are not requested at all.
+  useEffect(() => {
+    let cancelled = false;
+    const finish = () => {
+      if (!cancelled) setMediaReady(true);
+    };
+    if (!media.video && !media.audio) {
+      finish();
+      return;
+    }
+    navigator.mediaDevices
+      .getUserMedia({ video: media.video, audio: media.audio })
+      .then((stream) => {
+        stream.getTracks().forEach((track) => {
+          track.stop();
+        });
+        finish();
+      })
+      .catch(finish);
+    return () => {
+      cancelled = true;
+    };
+  }, [media.video, media.audio]);
+
+  if (isPending || !mediaReady) {
     return <ConnectingPlaceholder />;
   }
 
