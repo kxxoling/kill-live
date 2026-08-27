@@ -52,7 +52,7 @@ export function ChatSidebar({ roomId, userId, enableUpload = false }: ChatSideba
       content: string;
       roomId: string;
       type?: string;
-      fileUrl?: string;
+      fileKey?: string;
       fileName?: string;
       fileSize?: number;
     }) => {
@@ -75,13 +75,13 @@ export function ChatSidebar({ roomId, userId, enableUpload = false }: ChatSideba
 
       const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
       if (!uploadRes.ok) throw new Error("Upload failed");
-      const { url, name, size } = await uploadRes.json();
+      const { key, name, size } = await uploadRes.json();
 
       return sendMessage.mutateAsync({
         content: type === "image" ? `📷 ${name}` : `📎 ${name}`,
         roomId,
         type,
-        fileUrl: url,
+        fileKey: key,
         fileName: name,
         fileSize: size,
       });
