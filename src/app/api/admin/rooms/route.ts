@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin";
 import { adminDeleteRoom, adminGetRooms, adminUpdateRoomPassword } from "@/services/room-service";
 
 export async function GET() {
   try {
+    const guard = await requireAdmin();
+    if (!guard.ok) return guard.response;
+
     const rooms = await adminGetRooms();
     return NextResponse.json(rooms);
   } catch (error) {
@@ -13,6 +17,9 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    const guard = await requireAdmin();
+    if (!guard.ok) return guard.response;
+
     const { id, password } = await request.json();
     if (!id) {
       return NextResponse.json({ error: "Room ID is required" }, { status: 400 });
@@ -28,6 +35,9 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const guard = await requireAdmin();
+    if (!guard.ok) return guard.response;
+
     const id = new URL(request.url).searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "Room ID is required" }, { status: 400 });

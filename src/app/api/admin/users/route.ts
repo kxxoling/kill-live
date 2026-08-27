@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin";
 import { adminDeleteUser, adminGetUsers } from "@/services/user-service";
 
 export async function GET() {
   try {
+    const guard = await requireAdmin();
+    if (!guard.ok) return guard.response;
     const allUsers = await adminGetUsers();
     return NextResponse.json(allUsers);
   } catch (error) {
@@ -13,6 +16,9 @@ export async function GET() {
 
 export async function DELETE(request: Request) {
   try {
+    const guard = await requireAdmin();
+    if (!guard.ok) return guard.response;
+
     const id = new URL(request.url).searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });

@@ -58,6 +58,7 @@ LIVEKIT_API_KEY="devkey"
 LIVEKIT_API_SECRET="secret"
 LIVEKIT_URL="ws://localhost:7880"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
+ADMIN_USERNAMES=""           # Optional: comma-separated usernames with admin access
 ```
 
 ### Initialize Database
@@ -71,6 +72,15 @@ bun run db:push
 ```bash
 bun run dev # http://localhost:3000
 ```
+
+## Admin Dashboard
+
+The admin dashboard at `/admin` manages rooms and users. Admins are the
+usernames listed in the `ADMIN_USERNAMES` environment variable
+(comma-separated). The rule lives in `isAdminUser()` (`src/lib/admin.ts`)
+if you want to change it.
+
+All `/api/admin/*` endpoints enforce the same check and return 401/403 without it.
 
 ## Deployment
 
